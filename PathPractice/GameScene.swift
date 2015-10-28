@@ -9,37 +9,81 @@
 import SpriteKit
 
 class GameScene: SKScene {
+    
+   
     override func didMoveToView(view: SKView) {
-        /* Setup your scene here */
-        let myLabel = SKLabelNode(fontNamed:"Chalkduster")
-        myLabel.text = "Hello, World!";
-        myLabel.fontSize = 45;
-        myLabel.position = CGPoint(x:CGRectGetMidX(self.frame), y:CGRectGetMidY(self.frame));
         
-        self.addChild(myLabel)
+        runAction(SKAction.repeatActionForever(
+            SKAction.sequence([
+                SKAction.runBlock(addArrow),
+                SKAction.waitForDuration(0.5)
+                ])
+            ))
+
+        
+        
+        runAction(SKAction.repeatActionForever(
+            SKAction.sequence([
+                SKAction.runBlock(addEnemy),
+                SKAction.waitForDuration(1.0)
+                ])
+            ))
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-       /* Called when a touch begins */
-        
-        for touch in touches {
-            let location = touch.locationInNode(self)
-            
-            let sprite = SKSpriteNode(imageNamed:"Spaceship")
-            
-            sprite.xScale = 0.5
-            sprite.yScale = 0.5
-            sprite.position = location
-            
-            let action = SKAction.rotateByAngle(CGFloat(M_PI), duration:1)
-            
-            sprite.runAction(SKAction.repeatActionForever(action))
-            
-            self.addChild(sprite)
-        }
+    func random() -> CGFloat {
+        return CGFloat(Float(arc4random()) / 0xFFFFFFFF)
     }
-   
-    override func update(currentTime: CFTimeInterval) {
-        /* Called before each frame is rendered */
+    
+    func random(min: CGFloat, max: CGFloat) -> CGFloat {
+        return random() * (max - min) + min
+    }
+    
+    func addEnemy() {
+        
+        let enemy = SKSpriteNode(imageNamed: "Knight Enemy (7)")
+        
+        let actualY = random(self.size.height/2 + 50, max: self.size.height/2 + 60)
+        
+        enemy.position = CGPoint(x:  -enemy.size.width/2, y: actualY)
+        
+        addChild(enemy)
+        
+        let path = CGPathCreateMutable()
+        CGPathMoveToPoint(path, nil, 0, 0)
+        CGPathAddLineToPoint(path, nil, 180, 0)
+        CGPathAddLineToPoint(path, nil, 180, -240)
+        CGPathAddLineToPoint(path, nil, 450, -240)
+        CGPathAddLineToPoint(path, nil, 450, 175)
+        CGPathAddLineToPoint(path, nil, 740, 175)
+        CGPathAddLineToPoint(path, nil, 740, 0)
+        CGPathAddLineToPoint(path, nil, 1300, 0)
+        
+
+        let followLine = SKAction.followPath(path, asOffset: true, orientToPath: false, duration: 13.0)
+        enemy.runAction(SKAction.sequence([followLine]))
+        
+    }
+    
+    func addArrow() {
+        
+        let arrow = SKSpriteNode(imageNamed: "Arrow")
+        
+        let ArrowY = random(-arrow.size.height/2, max: self.size.height + arrow.size.height/2)
+        
+        arrow.position = CGPoint(x: 300, y: ArrowY)
+        
+        addChild(arrow)
+        
+        let path = CGPathCreateMutable()
+        CGPathMoveToPoint(path, nil, 0, 0 )
+        CGPathAddLineToPoint(path, nil,-self.size.width - arrow.size.width , 0 )
+        
+        let follow = SKAction.followPath(path, asOffset: true, orientToPath: false, duration: 2.0)
+        arrow.runAction(SKAction.sequence([follow]))
+        
+    }
+    
+        override func update(currentTime: CFTimeInterval) {
+       
     }
 }
